@@ -1,7 +1,7 @@
 import createHttpError from 'http-errors'
 import { Context } from 'koa'
 import Router from 'koa-router'
-import { hashPassword, users } from '../middleware/authentication'
+import { hashPassword, users } from '../middlewares/authentication'
 
 const router = new Router()
 

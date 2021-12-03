@@ -2,7 +2,18 @@ import request from 'supertest'
 import app from '../src'
 import { carts } from '../src/controllers/cart'
 import { inventory } from '../src/controllers/inventory'
-import { hashPassword, users } from '../src/middleware/authentication'
+import { hashPassword, users } from '../src/middlewares/authentication'
+
+const user = 'test_user'
+const password = 'a_password'
+const validAuth = Buffer.from(`${user}:${password}`).toString('base64')
+const authHeader = `Basic ${validAuth}`
+const createUser = () => {
+  users.set(user, {
+    email: 'test_user@example.org',
+    passwordHash: hashPassword(password),
+  })
+}
 
 afterAll(() => app.close())
 afterEach(() => inventory.clear())
@@ -11,10 +22,13 @@ afterEach(() => users.clear())
 
 describe('server', () => {
   describe('add items to a cart', () => {
+    beforeEach(createUser)
+
     test('adding available items', async () => {
       inventory.set('cheesecake', 3)
       const response = await request(app)
         .post('/carts/test_user/items')
+        .set('authorization', authHeader)
         .send({ item: 'cheesecake', quantity: 3 })
         .expect(200)
         .expect('Content-Type', /json/)
